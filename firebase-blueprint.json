@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "Employee": {
+      "title": "Employee",
+      "description": "Employee profile and basic leave entitlements",
+      "type": "object",
+      "properties": {
+        "employee_id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "department": { "type": "string" },
+        "position": { "type": "string" },
+        "join_date": { "type": "string", "format": "date" },
+        "profile_photo_url": { "type": "string", "format": "uri" },
+        "total_annual_leave_entitlement": { "type": "number" },
+        "total_mc_entitlement": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "role": { "type": "string", "enum": ["Super Admin", "HR Manager", "Department Manager", "Employee"] }
+      },
+      "required": ["employee_id", "name", "email", "department", "position", "join_date", "status", "role"]
+    },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "A request for leave by an employee",
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string" },
+        "employee_id": { "type": "string" },
+        "leave_type": { "type": "string", "enum": ["MC", "Annual", "Unpaid", "Emergency", "Compassionate"] },
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" },
+        "total_days": { "type": "number" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "approved_by": { "type": "string" },
+        "applied_date": { "type": "string", "format": "date-time" },
+        "supporting_document_url": { "type": "string", "format": "uri" }
+      },
+      "required": ["request_id", "employee_id", "leave_type", "start_date", "end_date", "total_days", "reason", "status", "applied_date"]
+    },
+    "LeaveBalance": {
+      "title": "Leave Balance",
+      "description": "Current leave balances for an employee for a specific year",
+      "type": "object",
+      "properties": {
+        "employee_id": { "type": "string" },
+        "year": { "type": "number" },
+        "annual_leave_remaining": { "type": "number" },
+        "mc_remaining": { "type": "number" },
+        "unpaid_leave_taken": { "type": "number" },
+        "emergency_leave_taken": { "type": "number" },
+        "compassionate_leave_taken": { "type": "number" }
+      },
+      "required": ["employee_id", "year", "annual_leave_remaining", "mc_remaining", "unpaid_leave_taken", "emergency_leave_taken", "compassionate_leave_taken"]
+    },
+    "BehaviorScore": {
+      "title": "Behavior Score",
+      "description": "Monthly behavior score and flags for an employee",
+      "type": "object",
+      "properties": {
+        "employee_id": { "type": "string" },
+        "month": { "type": "number" },
+        "year": { "type": "number" },
+        "behavior_score": { "type": "number" },
+        "flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "risk_level": { "type": "string", "enum": ["low", "medium", "high"] }
+      },
+      "required": ["employee_id", "month", "year", "behavior_score", "flags", "risk_level"]
+    },
+    "Department": {
+      "title": "Department",
+      "description": "Company department",
+      "type": "object",
+      "properties": {
+        "department_id": { "type": "string" },
+        "department_name": { "type": "string" },
+        "manager_id": { "type": "string" }
+      },
+      "required": ["department_id", "department_name", "manager_id"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "System audit logs",
+      "type": "object",
+      "properties": {
+        "log_id": { "type": "string" },
+        "action": { "type": "string" },
+        "performed_by": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" }
+      },
+      "required": ["log_id", "action", "performed_by", "timestamp", "details"]
+    }
+  },
+  "firestore": {
+    "employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Employee profiles"
+    },
+    "leave_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/LeaveRequest" },
+      "description": "Leave requests"
+    },
+    "leave_balances/{balanceId}": {
+      "schema": { "$ref": "#/entities/LeaveBalance" },
+      "description": "Leave balances per employee per year"
+    },
+    "behavior_scores/{scoreId}": {
+      "schema": { "$ref": "#/entities/BehaviorScore" },
+      "description": "Monthly behavior scores per employee"
+    },
+    "departments/{departmentId}": {
+      "schema": { "$ref": "#/entities/Department" },
+      "description": "Departments"
+    },
+    "audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Audit logs"
+    }
+  }
+}

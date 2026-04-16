@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: employees
+    // Document ID: employeeId (matches auth.uid)
+    // Fields:
+    //   - employee_id: string
+    //   - name: string
+    //   - email: string
+    //   - department: string
+    //   - position: string
+    //   - join_date: string
+    //   - profile_photo_url: string
+    //   - total_annual_leave_entitlement: number
+    //   - total_mc_entitlement: number
+    //   - status: string (active/inactive)
+    //   - role: string (Super Admin/HR Manager/Department Manager/Employee)
+    //
+    // Collection: leave_requests
+    // Document ID: requestId
+    // Fields:
+    //   - request_id: string
+    //   - employee_id: string
+    //   - leave_type: string
+    //   - start_date: string
+    //   - end_date: string
+    //   - total_days: number
+    //   - reason: string
+    //   - status: string
+    //   - approved_by: string
+    //   - applied_date: string
+    //   - supporting_document_url: string
+    //
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/employees/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        getUserData().role == 'Super Admin' ||
+        (request.auth.token.email == "kazuya.takumi17@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isHRManager() {
+      return isAuthenticated() && (getUserData().role == 'HR Manager' || isSuperAdmin());
+    }
+
+    function isDepartmentManager(department) {
+      return isAuthenticated() && (
+        (getUserData().role == 'Department Manager' && getUserData().department == department) ||
+        isHRManager()
+      );
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated();
+      allow create: if isSuperAdmin() || (isOwner(employeeId) && request.resource.data.role == 'Employee');
+      allow update: if isSuperAdmin() || isHRManager() || (isOwner(employeeId) && request.resource.data.role == resource.data.role);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /leave_requests/{requestId} {
+      allow read: if isAuthenticated() && (
+        isHRManager() ||
+        request.auth.uid == resource.data.employee_id ||
+        (getUserData().role == 'Department Manager' && getUserData().department == get(/databases/$(database)/documents/employees/$(resource.data.employee_id)).data.department)
+      );
+      allow create: if isAuthenticated() && request.resource.data.employee_id == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        isHRManager() ||
+        (getUserData().role == 'Department Manager' && getUserData().department == get(/databases/$(database)/documents/employees/$(resource.data.employee_id)).data.department) ||
+        (request.auth.uid == resource.data.employee_id && request.resource.data.status == resource.data.status)
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    match /leave_balances/{balanceId} {
+      allow read: if isAuthenticated();
+      allow write: if isHRManager() || isSuperAdmin();
+    }
+
+    match /behavior_scores/{scoreId} {
+      allow read: if isAuthenticated() && (
+        isHRManager() ||
+        request.auth.uid == resource.data.employee_id ||
+        (getUserData().role == 'Department Manager' && getUserData().department == get(/databases/$(database)/documents/employees/$(resource.data.employee_id)).data.department)
+      );
+      allow write: if isHRManager() || isSuperAdmin();
+    }
+
+    match /departments/{departmentId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin() || isHRManager();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Immutable
+    }
+  }
+}
