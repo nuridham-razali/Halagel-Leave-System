@@ -1,10 +1,10 @@
-{
-  "projectId": "gen-lang-client-0902703171",
-  "appId": "1:317874142266:web:9bff9a9ce957f346f44903",
-  "apiKey": "AIzaSyAFHnC28qGQ_YOsrX-yi-Efia0DLt7Dx-Q",
-  "authDomain": "gen-lang-client-0902703171.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-8654a903-b5d4-4be2-836e-17834558ddf4",
-  "storageBucket": "gen-lang-client-0902703171.firebasestorage.app",
-  "messagingSenderId": "317874142266",
-  "measurementId": ""
-}
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyApE1WFP_Hf2bSiznqi2C83XTDSBncBRHQ",
+  authDomain: "halagel-leave-system.firebaseapp.com",
+  projectId: "halagel-leave-system",
+  storageBucket: "halagel-leave-system.firebasestorage.app",
+  messagingSenderId: "660610488880",
+  appId: "1:660610488880:web:b6b13c5f1ff3e262376bf5",
+  measurementId: "G-C2WL5SCH7G"
+};
