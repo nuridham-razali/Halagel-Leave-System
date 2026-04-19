@@ -17,8 +17,9 @@ export default function Login() {
       setError('');
       setLoading(true);
       await signInWithGoogle();
-    } catch (err) {
-      setError('Failed to sign in. Please try again.');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to sign in. Please try again.');
     } finally {
       setLoading(false);
     }
