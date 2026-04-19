@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
 
 interface EmployeeData {
   employee_id: string;
   name: string;
   email: string;
+  company: string;
   department: string;
   position: string;
   join_date: string;
@@ -14,7 +15,7 @@ interface EmployeeData {
   total_annual_leave_entitlement: number;
   total_mc_entitlement: number;
   status: 'active' | 'inactive';
-  role: 'Super Admin' | 'HR Manager' | 'Department Manager' | 'Employee';
+  role: 'Super Admin' | 'HR' | 'Manager' | 'Employee';
 }
 
 interface AuthContextType {
@@ -40,13 +41,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const docRef = doc(db, 'employees', currentUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setEmployeeData(docSnap.data() as EmployeeData);
+            const data = docSnap.data() as EmployeeData;
+            // Force Super Admin role for specific email if not already set
+            if (currentUser.email === 'kazuya.takumi17@gmail.com' && data.role !== 'Super Admin') {
+              data.role = 'Super Admin';
+              await updateDoc(docRef, { role: 'Super Admin' });
+            }
+            setEmployeeData(data);
           } else {
             // Create default employee record if it doesn't exist
             const newEmployee: EmployeeData = {
               employee_id: currentUser.uid,
               name: currentUser.displayName || 'Unknown',
               email: currentUser.email || '',
+              company: 'HALAGEL (M) SDN BHD',
               department: 'Unassigned',
               position: 'Employee',
               join_date: new Date().toISOString().split('T')[0],

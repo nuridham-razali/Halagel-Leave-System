@@ -20,7 +20,10 @@ export default function Settings() {
           <h1 className="text-2xl font-bold text-text-main">System Settings</h1>
           <p className="text-sm text-text-muted">Configure HR policies, scoring weights, and system preferences</p>
         </div>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <button 
+          onClick={() => alert('Settings saved successfully!')}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
           <Save className="w-4 h-4" />
           Save Changes
         </button>

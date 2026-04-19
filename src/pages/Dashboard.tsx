@@ -1,13 +1,40 @@
-import React from 'react';
-import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, Plus, FileText } from 'lucide-react';
 import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export default function Dashboard() {
   const { isDarkMode } = useTheme();
+  const { employeeData, user } = useAuth();
+  const navigate = useNavigate();
 
-  // Mock data for charts
+  const [myLeaves, setMyLeaves] = useState<any[]>([]);
+  const [loadingLeaves, setLoadingLeaves] = useState(false);
+
+  useEffect(() => {
+    if (employeeData?.role === 'Employee' && user) {
+      const fetchMyLeaves = async () => {
+        setLoadingLeaves(true);
+        try {
+          const q = query(collection(db, 'leave_requests'), where('employee_id', '==', user.uid), orderBy('applied_date', 'desc'));
+          const snapshot = await getDocs(q);
+          setMyLeaves(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        } catch (error) {
+          console.error("Error fetching my leaves", error);
+        } finally {
+          setLoadingLeaves(false);
+        }
+      };
+      fetchMyLeaves();
+    }
+  }, [employeeData, user]);
+
+  // Rest of original code...
   const donutOptions: ApexOptions = {
     chart: { type: 'donut', fontFamily: 'Inter, sans-serif', background: 'transparent' },
     theme: { mode: isDarkMode ? 'dark' : 'light' },
@@ -73,19 +100,120 @@ export default function Dashboard() {
   const flaggedEmployees = [
     { id: 1, name: 'John Doe', dept: 'Engineering', score: 45, risk: 'High', flags: ['Frequent Monday MC'] },
     { id: 2, name: 'Jane Smith', dept: 'Sales', score: 48, risk: 'High', flags: ['Consecutive MC'] },
-    { id: 3, name: 'Mike Johnson', dept: 'Marketing', score: 52, risk: 'Medium', flags: ['High Unpaid Leave'] },
+    { id: 3, name: 'Mike Johnson', dept: 'Production', score: 52, risk: 'Medium', flags: ['High Unpaid Leave'] },
   ];
+
+  if (employeeData && employeeData.role === 'Employee') {
+    const annualUsed = myLeaves.filter(l => l.leave_type === 'Annual Leave' && l.status === 'approved').reduce((acc, curr) => acc + curr.total_days, 0);
+    const mcUsed = myLeaves.filter(l => l.leave_type === 'Medical Leave (MC)' && l.status === 'approved').reduce((acc, curr) => acc + curr.total_days, 0);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-text-main">My Dashboard</h1>
+            <div className="text-sm text-text-muted">Welcome back, {employeeData.name}</div>
+          </div>
+          <button 
+            onClick={() => navigate('/leave-requests')}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Apply Leave
+          </button>
+        </div>
+
+        {/* My KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center">
+            <div className="bg-indigo-500/15 p-3 rounded-lg mr-4">
+              <CalendarCheck className="w-6 h-6 text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Annual Leave</p>
+              <p className="text-2xl font-bold text-text-main mt-1">
+                {employeeData.total_annual_leave_entitlement - annualUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData.total_annual_leave_entitlement} remaining</span>
+              </p>
+            </div>
+          </div>
+          <div className="bg-red-500/10 rounded-xl border border-border-subtle p-6 flex items-center">
+            <div className="bg-red-500/15 p-3 rounded-lg mr-4">
+              <Plus className="w-6 h-6 text-red-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Medical Leave (MC)</p>
+              <p className="text-2xl font-bold text-text-main mt-1">
+                {employeeData.total_mc_entitlement - mcUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData.total_mc_entitlement} remaining</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-text-main">My Recent Leaves</h2>
+            <Link to="/leave-requests" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">View All</Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border-subtle">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Dates</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Days</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-subtle">
+                {loadingLeaves ? (
+                  <tr><td colSpan={4} className="px-4 py-4 text-center text-text-muted">Loading...</td></tr>
+                ) : myLeaves.length === 0 ? (
+                  <tr><td colSpan={4} className="px-4 py-4 text-center text-text-muted">No leave requests found</td></tr>
+                ) : (
+                  myLeaves.slice(0, 5).map((req) => (
+                    <tr key={req.id} className="hover:bg-bg-hover">
+                      <td className="px-4 py-3 text-sm text-text-main">{req.leave_type}</td>
+                      <td className="px-4 py-3 text-sm text-text-main">{new Date(req.start_date).toLocaleDateString()} - {new Date(req.end_date).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm text-text-main">{req.total_days}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          req.status === 'approved' ? 'bg-emerald-500/15 text-emerald-500' : 
+                          req.status === 'rejected' ? 'bg-red-500/15 text-red-500' : 
+                          'bg-amber-500/15 text-amber-500'
+                        }`}>
+                          {req.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-text-main">Dashboard Overview</h1>
-        <div className="text-sm text-text-muted">Last updated: Today, 09:00 AM</div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-main">Dashboard Overview</h1>
+          <div className="text-sm text-text-muted">Last updated: Today, 09:00 AM</div>
+        </div>
+        <button 
+          onClick={() => navigate('/leave-requests')}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Apply Leave
+        </button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center">
+        <Link to="/employees" className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center hover:border-indigo-500/50 transition-colors cursor-pointer">
           <div className="bg-indigo-500/15 p-3 rounded-lg mr-4">
             <Users className="w-6 h-6 text-indigo-400" />
           </div>
@@ -93,8 +221,8 @@ export default function Dashboard() {
             <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Total Employees</p>
             <p className="text-2xl font-bold text-text-main mt-1">156</p>
           </div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center">
+        </Link>
+        <Link to="/leave-requests" className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center hover:border-indigo-500/50 transition-colors cursor-pointer">
           <div className="bg-amber-500/15 p-3 rounded-lg mr-4">
             <Clock className="w-6 h-6 text-amber-500" />
           </div>
@@ -102,8 +230,8 @@ export default function Dashboard() {
             <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Pending Requests</p>
             <p className="text-2xl font-bold text-text-main mt-1">12</p>
           </div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center">
+        </Link>
+        <Link to="/leave-requests" className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center hover:border-indigo-500/50 transition-colors cursor-pointer">
           <div className="bg-emerald-500/15 p-3 rounded-lg mr-4">
             <CalendarCheck className="w-6 h-6 text-emerald-500" />
           </div>
@@ -111,8 +239,8 @@ export default function Dashboard() {
             <p className="text-sm font-medium text-text-muted uppercase tracking-wider">On Leave Today</p>
             <p className="text-2xl font-bold text-text-main mt-1">8</p>
           </div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center">
+        </Link>
+        <Link to="/analytics" className="bg-bg-card rounded-xl border border-border-subtle p-6 flex items-center hover:border-indigo-500/50 transition-colors cursor-pointer">
           <div className="bg-blue-500/15 p-3 rounded-lg mr-4">
             <TrendingUp className="w-6 h-6 text-blue-400" />
           </div>
@@ -125,7 +253,7 @@ export default function Dashboard() {
               </span>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Charts Row 1 */}
@@ -156,7 +284,7 @@ export default function Dashboard() {
         <div className="bg-bg-card rounded-xl border border-border-subtle p-6 flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-text-main">Flagged Employees</h2>
-            <button className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">View All</button>
+            <Link to="/employees" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">View All</Link>
           </div>
           <div className="flex-1 overflow-auto">
             <table className="min-w-full divide-y divide-border-subtle">
@@ -189,7 +317,7 @@ export default function Dashboard() {
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-indigo-400 hover:text-indigo-300">Review</button>
+                      <Link to="/employees" className="text-indigo-400 hover:text-indigo-300">Review</Link>
                     </td>
                   </tr>
                 ))}

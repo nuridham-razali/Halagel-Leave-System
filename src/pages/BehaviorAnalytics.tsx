@@ -40,7 +40,7 @@ export default function BehaviorAnalytics() {
   const scatterSeries = [
     { name: 'Engineering', data: [[5, 95], [12, 85], [25, 45], [8, 90], [18, 60]] },
     { name: 'Sales', data: [[15, 75], [22, 55], [30, 35], [10, 88], [5, 92]] },
-    { name: 'Marketing', data: [[8, 85], [14, 70], [20, 50], [12, 80], [6, 95]] }
+    { name: 'Production', data: [[8, 85], [14, 70], [20, 50], [12, 80], [6, 95]] }
   ];
 
   const radarOptions: ApexOptions = {
@@ -105,11 +105,17 @@ export default function BehaviorAnalytics() {
           <p className="text-sm text-text-muted">Deep dive into company-wide leave patterns</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 border border-border-subtle rounded-lg text-text-main bg-bg-card hover:bg-bg-hover text-sm font-medium">
+          <button 
+            onClick={() => alert('Date range picker would open here')}
+            className="flex items-center gap-2 px-4 py-2 border border-border-subtle rounded-lg text-text-main bg-bg-card hover:bg-bg-hover text-sm font-medium"
+          >
             <Calendar className="w-4 h-4" />
             This Year
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+          <button 
+            onClick={() => alert('Exporting report as PDF...')}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium"
+          >
             <Download className="w-4 h-4" />
             Export
           </button>
@@ -129,7 +135,7 @@ export default function BehaviorAnalytics() {
       <div className="bg-bg-card p-6 rounded-xl border border-border-subtle">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-text-main">Company-Wide Leave Trends (12 Months)</h2>
-          <button className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
+          <button onClick={() => alert('Maximizing chart...')} className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
         </div>
         <div className="h-80">
           <Chart options={areaOptions} series={areaSeries} type="area" height="100%" />
@@ -141,7 +147,7 @@ export default function BehaviorAnalytics() {
         <div className="bg-bg-card p-6 rounded-xl border border-border-subtle">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-text-main">Employee Behavior Score Distribution</h2>
-            <button className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={() => alert('Maximizing chart...')} className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
           </div>
           <div className="h-72">
             <Chart options={scatterOptions} series={scatterSeries} type="scatter" height="100%" />
@@ -151,7 +157,7 @@ export default function BehaviorAnalytics() {
         <div className="bg-bg-card p-6 rounded-xl border border-border-subtle">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-text-main">Leave Patterns by Day of Week</h2>
-            <button className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={() => alert('Maximizing chart...')} className="text-text-muted hover:text-text-main"><Maximize2 className="w-4 h-4" /></button>
           </div>
           <div className="h-72">
             <Chart options={heatmapOptions} series={heatmapSeries} type="heatmap" height="100%" />
@@ -182,7 +188,10 @@ export default function BehaviorAnalytics() {
           <p className="text-text-muted max-w-md mb-6">
             Our AI-driven forecast model requires at least 3 months of historical data to generate accurate predictions for future leave trends.
           </p>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+          <button 
+            onClick={() => alert('Generating preliminary report...')}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
             Generate Preliminary Report
           </button>
         </div>

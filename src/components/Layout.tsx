@@ -35,7 +35,7 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const navItems = [
+  const allNavItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/employees', icon: Users, label: 'Employees' },
     { to: '/leave-requests', icon: CalendarDays, label: 'Leave Requests' },
@@ -43,6 +43,10 @@ export default function Layout() {
     { to: '/reports', icon: FileText, label: 'Reports' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
+
+  const navItems = employeeData?.role === 'Employee' 
+    ? allNavItems.filter(item => item.to === '/' || item.to === '/leave-requests')
+    : allNavItems;
 
   return (
     <div className="min-h-screen bg-bg-deep flex">
@@ -59,11 +63,11 @@ export default function Layout() {
         "fixed lg:static inset-y-0 left-0 z-30 w-64 bg-bg-deep border-r border-border-subtle text-text-main transition-transform duration-300 ease-in-out flex flex-col",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
-        <div className="h-16 flex items-center px-6 font-bold text-xl border-b border-border-subtle">
-          <div className="w-8 h-8 bg-indigo-500 rounded-md mr-3 flex items-center justify-center">
+        <div className="h-16 flex items-center px-6 font-bold text-lg border-b border-border-subtle">
+          <div className="w-8 h-8 bg-indigo-500 rounded-md mr-3 flex items-center justify-center shrink-0">
             <Activity className="w-5 h-5 text-white" />
           </div>
-          HR Tracker
+          <span className="truncate" title="Halagel Leave Monitoring System">Halagel Leave System</span>
         </div>
         
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">

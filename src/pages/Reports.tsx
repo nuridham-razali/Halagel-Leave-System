@@ -16,7 +16,10 @@ export default function Reports() {
           <h1 className="text-2xl font-bold text-text-main">Reports & Exports</h1>
           <p className="text-sm text-text-muted">Generate, schedule, and export HR analytics reports</p>
         </div>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <button 
+          onClick={() => alert('Custom Report Builder will open here')}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
           <FileText className="w-4 h-4" />
           Custom Report Builder
         </button>
@@ -24,7 +27,11 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {reportTemplates.map(template => (
-          <div key={template.id} className="bg-bg-card p-5 rounded-xl border border-border-subtle hover:border-indigo-500/50 transition-colors cursor-pointer group">
+          <div 
+            key={template.id} 
+            onClick={() => alert(`Generating ${template.title}...`)}
+            className="bg-bg-card p-5 rounded-xl border border-border-subtle hover:border-indigo-500/50 transition-colors cursor-pointer group"
+          >
             <div className={`${template.bg} ${template.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
               <template.icon className="w-6 h-6" />
             </div>
@@ -41,7 +48,10 @@ export default function Reports() {
         <div className="border-b border-border-subtle px-6 py-4 flex justify-between items-center bg-bg-hover">
           <h2 className="text-lg font-semibold text-text-main">Recent Generated Reports</h2>
           <div className="flex gap-2">
-            <button className="p-2 text-text-muted hover:text-text-main bg-bg-card border border-border-subtle rounded-lg">
+            <button 
+              onClick={() => alert('Filtering options...')}
+              className="p-2 text-text-muted hover:text-text-main bg-bg-card border border-border-subtle rounded-lg"
+            >
               <Filter className="w-4 h-4" />
             </button>
           </div>
@@ -80,10 +90,18 @@ export default function Reports() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-indigo-400 hover:text-indigo-300 mr-3" title="Download">
+                  <button 
+                    onClick={() => alert(`Downloading ${report.name}...`)}
+                    className="text-indigo-400 hover:text-indigo-300 mr-3" 
+                    title="Download"
+                  >
                     <Download className="w-4 h-4 inline" />
                   </button>
-                  <button className="text-text-muted hover:text-text-main" title="Print">
+                  <button 
+                    onClick={() => alert(`Printing ${report.name}...`)}
+                    className="text-text-muted hover:text-text-main" 
+                    title="Print"
+                  >
                     <Printer className="w-4 h-4 inline" />
                   </button>
                 </td>
