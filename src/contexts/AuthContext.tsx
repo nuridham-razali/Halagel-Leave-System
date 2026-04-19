@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
 
@@ -34,6 +34,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for redirect result on load
+    getRedirectResult(auth).catch((error) => {
+      console.error("Redirect signIn error:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -81,7 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      if (window.innerWidth <= 768 || window.location.hostname.includes('vercel.app')) {
+         // Mobile or Vercel custom domains often block cross-site tracking popups
+         await signInWithRedirect(auth, googleProvider);
+      } else {
+         await signInWithPopup(auth, googleProvider);
+      }
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
