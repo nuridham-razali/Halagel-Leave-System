@@ -18,8 +18,12 @@ export default function Login() {
       setLoading(true);
       await signInWithGoogle();
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to sign in. Please try again.');
+      console.error("Full error object:", err);
+      if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('auth/unauthorized-domain'))) {
+        setError(`Firebase: Domain ${window.location.hostname} is not whitelisted. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains and add exactly: ${window.location.hostname}`);
+      } else {
+        setError(err.message || 'Failed to sign in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
