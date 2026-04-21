@@ -34,11 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for redirect result on load
-    getRedirectResult(auth).catch((error) => {
-      console.error("Redirect signIn error:", error);
-    });
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -72,8 +67,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await setDoc(docRef, newEmployee);
             setEmployeeData(newEmployee);
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching employee data:", error);
+          if (error.code && error.code.includes('permission')) {
+             console.error("WARNING: Firestore Security Rules are blocking access! Please ensure your new Firebase project Database is in Test Mode or rules are deployed.");
+             // Throw the error so it can be handled if needed, or set employee data to a mock error state
+          }
         }
       } else {
         setEmployeeData(null);
@@ -86,12 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      if (window.innerWidth <= 768 || window.location.hostname.includes('vercel.app')) {
-         // Mobile or Vercel custom domains often block cross-site tracking popups
-         await signInWithRedirect(auth, googleProvider);
-      } else {
-         await signInWithPopup(auth, googleProvider);
-      }
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;

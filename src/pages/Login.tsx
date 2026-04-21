@@ -57,6 +57,10 @@ export default function Login() {
 
         <div className="mt-8 text-center text-sm text-text-muted">
           <p>Secure access for authorized personnel only.</p>
+          <div className="mt-4 p-2 bg-gray-800/50 rounded text-xs break-all">
+            Debug Info:<br/>
+            Current Domain: <span className="text-indigo-400 font-mono">{window.location.hostname}</span>
+          </div>
         </div>
       </div>
     </div>
