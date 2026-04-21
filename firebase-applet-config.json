@@ -1,10 +1,9 @@
 {
-  "projectId": "gen-lang-client-0902703171",
-  "appId": "1:317874142266:web:9bff9a9ce957f346f44903",
-  "apiKey": "AIzaSyAFHnC28qGQ_YOsrX-yi-Efia0DLt7Dx-Q",
-  "authDomain": "gen-lang-client-0902703171.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-8654a903-b5d4-4be2-836e-17834558ddf4",
-  "storageBucket": "gen-lang-client-0902703171.firebasestorage.app",
-  "messagingSenderId": "317874142266",
-  "measurementId": ""
+  "apiKey": "AIzaSyBBj35TBFeOMhTMm9g4KcDyQ_gOFtjQldg",
+  "authDomain": "halagel-leave-system-9798d.firebaseapp.com",
+  "projectId": "halagel-leave-system-9798d",
+  "storageBucket": "halagel-leave-system-9798d.firebasestorage.app",
+  "messagingSenderId": "221174795088",
+  "appId": "1:221174795088:web:0eb813e64fdc143b7c3a55",
+  "databaseURL": "https://halagel-leave-system-9798d-default-rtdb.asia-southeast1.firebasedatabase.app"
 }
