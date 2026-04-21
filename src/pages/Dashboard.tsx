@@ -112,7 +112,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-text-main">My Dashboard</h1>
-            <div className="text-sm text-text-muted">Welcome back, {employeeData.name}</div>
+            <div className="text-sm text-text-muted">Welcome back, {employeeData?.name || 'User'}</div>
           </div>
           <button 
             onClick={() => navigate('/leave-requests')}
@@ -132,7 +132,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Annual Leave</p>
               <p className="text-2xl font-bold text-text-main mt-1">
-                {employeeData.total_annual_leave_entitlement - annualUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData.total_annual_leave_entitlement} remaining</span>
+                {(employeeData?.total_annual_leave_entitlement || 14) - annualUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData?.total_annual_leave_entitlement || 14} remaining</span>
               </p>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm font-medium text-text-muted uppercase tracking-wider">Medical Leave (MC)</p>
               <p className="text-2xl font-bold text-text-main mt-1">
-                {employeeData.total_mc_entitlement - mcUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData.total_mc_entitlement} remaining</span>
+                {(employeeData?.total_mc_entitlement || 14) - mcUsed} <span className="text-sm text-text-muted font-normal">/ {employeeData?.total_mc_entitlement || 14} remaining</span>
               </p>
             </div>
           </div>
