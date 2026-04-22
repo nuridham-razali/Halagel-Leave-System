@@ -8,6 +8,7 @@ export default function Employees() {
   const { employeeData } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -53,11 +54,13 @@ export default function Employees() {
 
   const fetchEmployees = async () => {
     try {
+      setFetchError(null);
       const querySnapshot = await getDocs(collection(db, 'employees'));
       const emps = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setEmployees(emps);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching employees", error);
+      setFetchError(error.message || "Failed to load employees");
     } finally {
       setLoading(false);
     }
@@ -144,10 +147,14 @@ export default function Employees() {
       }
     }
 
-    const matchesSearch = emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const nameMatch = (emp.name || '').toLowerCase().includes(searchLower);
+    const deptMatch = (emp.department || '').toLowerCase().includes(searchLower);
+    const emailMatch = (emp.email || '').toLowerCase().includes(searchLower);
+    
+    const matchesSearch = nameMatch || deptMatch || emailMatch;
     const matchesCompany = selectedCompany === 'All' || emp.company === selectedCompany;
+    
     return matchesSearch && matchesCompany;
   });
 
@@ -212,6 +219,18 @@ export default function Employees() {
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        </div>
+      ) : fetchError ? (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8 text-center">
+          <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-text-main mb-2">Could Not Load Employees</h2>
+          <p className="text-text-muted">{fetchError}</p>
+        </div>
+      ) : filteredEmployees.length === 0 ? (
+        <div className="bg-bg-card rounded-xl border border-border-subtle p-12 text-center">
+          <Search className="w-12 h-12 text-text-muted mx-auto mb-4" />
+          <h2 className="text-xl font-medium text-text-main">No employees found</h2>
+          <p className="text-text-muted mt-2">Try adjusting your filters or search term.</p>
         </div>
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

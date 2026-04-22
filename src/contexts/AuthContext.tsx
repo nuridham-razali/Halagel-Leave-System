@@ -22,6 +22,7 @@ interface AuthContextType {
   user: User | null;
   employeeData: EmployeeData | null;
   loading: boolean;
+  dbError: string | null;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -32,10 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      setDbError(null);
       if (currentUser) {
         try {
           const docRef = doc(db, 'employees', currentUser.uid);
@@ -71,7 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error("Error fetching employee data:", error);
           if (error.code && error.code.includes('permission')) {
              console.error("WARNING: Firestore Security Rules are blocking access! Please ensure your new Firebase project Database is in Test Mode or rules are deployed.");
-             // Throw the error so it can be handled if needed, or set employee data to a mock error state
+             setDbError("Missing or insufficient permissions. Your database rules are blocking access.");
+          } else if (error.message && error.message.includes('offline')) {
+             setDbError("Failed to connect to the database. This usually means the API Key is invalid, or the Firestore Database has not been created yet.");
+          } else {
+             setDbError("Database error: " + error.message);
           }
         }
       } else {
@@ -102,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, employeeData, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, employeeData, loading, dbError, signInWithGoogle, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
